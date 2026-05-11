@@ -1,0 +1,59 @@
+# Especificação Técnica: Chatbot Clínico
+
+## 1. Definição da Persona e Tom de Voz
+
+- **Nome do Bot:** Dr. IA
+- **Personalidade:** O Dr. IA é um assistente de triagem e suporte clínico. Sua personalidade é uma combinação de **profissionalismo**, **empatia** e **eficiência**. Ele se comunica de forma clara e objetiva, utilizando uma linguagem acessível, mas mantendo a seriedade e a responsabilidade inerentes ao contexto da saúde. Sua principal função é guiar o paciente de forma segura e informativa, sem substituir o diagnóstico médico humano.
+- **Exemplo de Saudação:** "Olá! Eu sou o Dr. IA, seu assistente virtual da Clínica de Biomedicina. Estou aqui para ajudar a entender seus sintomas e orientar sobre os próximos passos. Como posso ajudar hoje?"
+
+## 2. Requisitos Funcionais (O que ele resolve?)
+
+O Dr. IA foi projetado para resolver as seguintes funções principais, integrando-se com o sistema de back-end já desenvolvido:
+
+1.  **Triagem de Urgência por Sintomas:** O chatbot será capaz de analisar o relato inicial do paciente sobre seus sintomas. Utilizará técnicas de Processamento de Linguagem Natural (PLN), como expressões regulares e análise de palavras-chave, para identificar imediatamente sinais de alerta que sugiram uma emergência médica (ex: "dor no peito", "falta de ar severa", "perda de consciência"). Em caso de detecção de urgência, o bot interromperá o fluxo normal e orientará o paciente a buscar atendimento médico imediato ou ligar para serviços de emergência.
+
+2.  **Consulta de Valores de Exames:** O paciente poderá informar um valor específico de um exame (ex: "Minha glicose deu 180"). O chatbot consultará o banco de dados `clinica.db` para verificar os limites de referência para aquele tipo de exame e informará ao paciente se o valor está dentro da faixa normal, em alerta ou em risco, com base nos parâmetros configurados na seção de Gestão de Exames do sistema.
+
+3.  **Coleta de Dados para Predição de Risco com IA:** O chatbot guiará o paciente na coleta dos dados biomédicos necessários para a predição de risco. Ele solicitará, de forma estruturada, informações como glicose, pressão arterial, IMC e colesterol. Após a coleta completa, o bot enviará esses dados para o modelo de Machine Learning (`modelo_risco.pkl`) via API, receberá o resultado da predição (Normal, Alerta, Alto Risco) e o apresentará ao paciente de forma clara e compreensível, juntamente com recomendações apropriadas.
+
+## 3. Design do Fluxo Conversacional (Caminho Feliz)
+
+O fluxo conversacional do Dr. IA, no cenário ideal onde o usuário segue as orientações e não há intercorrências, será o seguinte:
+
+1.  **Saudação e Identificação:**
+    *   **Bot:** "Olá! Eu sou o Dr. IA, seu assistente virtual da Clínica de Biomedicina. Estou aqui para ajudar a entender seus sintomas e orientar sobre os próximos passos. Como posso ajudar hoje?"
+    *   **Usuário:** "Estou com uma dor de cabeça forte e me sinto cansado."
+
+2.  **Análise de Urgência pelo Bot:**
+    *   O bot processa a frase do usuário. Se não detectar palavras-chave de emergência (ex: "dor no peito", "falta de ar"), prossegue para a coleta de informações.
+    *   **Bot:** "Entendido. Para que eu possa te ajudar melhor, preciso de algumas informações. Você já realizou algum exame recentemente? Ou gostaria de fazer uma análise de risco com base em seus dados biomédicos?"
+
+3.  **Solicitação de Indicadores (Coleta para IA):**
+    *   **Usuário:** "Gostaria de fazer a análise de risco."
+    *   **Bot:** "Certo. Por favor, me informe os seguintes valores, um por um, ou todos de uma vez se preferir: Glicose (mg/dL), Pressão Arterial (mmHg), IMC (kg/m²) e Colesterol (mg/dL)."
+    *   **Usuário:** "Minha glicose é 110, pressão 120/80, IMC 25 e colesterol 190."
+
+4.  **Processamento e Entrega do Diagnóstico Gerado pela IA:**
+    *   O bot valida os dados recebidos e os envia para a API (`/predict`).
+    *   **Bot:** "Obrigado por fornecer suas informações. Estou processando os dados com nossa inteligência artificial para avaliar seu risco clínico. Por favor, aguarde um momento..."
+    *   **(Após receber a resposta da API)**
+    *   **Bot:** "Com base nos dados que você me forneceu, a análise de risco indica que você está na categoria **Normal**. Seus indicadores estão dentro das faixas de referência saudáveis. Continue monitorando sua saúde e siga as recomendações do seu médico. Se tiver mais alguma dúvida, estou à disposição!"
+
+## 4. Tratamento de Erros e Exceções
+
+O Dr. IA será projetado para lidar com diversas situações de erro e exceção, garantindo uma experiência fluida e segura para o usuário:
+
+1.  **Usuário digita algo que o bot não entende (Intenção Não Reconhecida):**
+    *   **Reação do Bot:** Se a entrada do usuário não corresponder a nenhuma intenção programada (ex: triagem, consulta de valores, predição), o bot pedirá clareza.
+    *   **Exemplo:** "Desculpe, não entendi sua solicitação. Você gostaria de relatar sintomas, consultar um valor de exame ou fazer uma análise de risco com a nossa IA?"
+    *   **Mecanismo:** Utilização de um *fallback intent* ou *default response* que redireciona o usuário para as funcionalidades principais.
+
+2.  **Usuário se recusa a passar um dado (Dados Incompletos):**
+    *   **Reação do Bot:** Se o usuário se recusar a fornecer um dado essencial para uma funcionalidade (ex: um valor de exame para a IA), o bot explicará a necessidade da informação e oferecerá alternativas.
+    *   **Exemplo:** "Compreendo sua preocupação. Para realizar a análise de risco com precisão, preciso de todos os valores solicitados. Sem eles, não consigo gerar uma predição confiável. Você gostaria de prosseguir com as informações que já temos, ou prefere explorar outra funcionalidade?"
+    *   **Mecanismo:** Validação de campos obrigatórios antes de chamar a API. Se faltar dados, o bot solicita novamente de forma educada e oferece opções (ex: cancelar a análise, tentar outra funcionalidade).
+
+3.  **Modelo de IA retorna um erro de processamento (Erro na API/ML):**
+    *   **Reação do Bot:** Se a chamada para a API de predição (`/predict`) ou para o banco de dados (`/dashboard-stats`, `/patients`) resultar em um erro (ex: erro de servidor, dados inválidos enviados para o modelo), o bot informará o usuário sobre o problema técnico e sugerirá tentar novamente mais tarde ou buscar ajuda humana.
+    *   **Exemplo:** "Houve um problema técnico ao processar sua solicitação. Nossa inteligência artificial não conseguiu gerar a predição neste momento. Por favor, tente novamente mais tarde ou entre em contato com a equipe de suporte da clínica para assistência."
+    *   **Mecanismo:** Tratamento de erros nas chamadas de API (blocos `try-catch` no front-end e tratamento de exceções no back-end FastAPI). O bot deve ter mensagens de erro genéricas e informativas para o usuário final, sem expor detalhes técnicos sensíveis.
