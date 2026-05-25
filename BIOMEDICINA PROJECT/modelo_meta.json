@@ -1,0 +1,93 @@
+{
+  "model_name": "Random Forest",
+  "features": [
+    "idade",
+    "glicose",
+    "pressao",
+    "imc",
+    "colesterol"
+  ],
+  "classes": [
+    0,
+    1,
+    2
+  ],
+  "class_labels": [
+    "Baixo Risco",
+    "Risco Médio",
+    "Risco Alto"
+  ],
+  "accuracy": 0.935,
+  "f1_macro": 0.936207,
+  "cv_mean": 0.903125,
+  "cv_std": 0.004419,
+  "precision": 0.950983,
+  "recall": 0.926564,
+  "feature_importances": {
+    "idade": 0.116101,
+    "glicose": 0.215065,
+    "pressao": 0.218143,
+    "imc": 0.231038,
+    "colesterol": 0.219653
+  },
+  "confusion_matrix": [
+    [
+      83,
+      11,
+      0
+    ],
+    [
+      0,
+      162,
+      3
+    ],
+    [
+      0,
+      12,
+      129
+    ]
+  ],
+  "scaler_mean": [
+    57.8144,
+    105.0063,
+    127.1,
+    26.9986,
+    215.1487
+  ],
+  "scaler_std": [
+    23.4411,
+    28.0133,
+    19.9622,
+    6.1152,
+    39.9802
+  ],
+  "n_estimators": 200,
+  "max_depth": 10,
+  "training_samples": 1600,
+  "test_samples": 400,
+  "auc_scores": {
+    "baixo": 0.997845,
+    "medio": 0.982979,
+    "alto": 0.993729
+  },
+  "all_models": {
+    "Regressão Logística": {
+      "accuracy": 0.78,
+      "f1_macro": 0.7751,
+      "cv_mean": 0.7638,
+      "cv_std": 0.0113
+    },
+    "Random Forest": {
+      "accuracy": 0.935,
+      "f1_macro": 0.9362,
+      "cv_mean": 0.9031,
+      "cv_std": 0.0044
+    },
+    "KNN": {
+      "accuracy": 0.8225,
+      "f1_macro": 0.8189,
+      "cv_mean": 0.8219,
+      "cv_std": 0.02
+    }
+  }
+}
